@@ -62,16 +62,32 @@ export class AxisAlignedBoundingBox {
     return this.y;
   }
 
+  set top(value: number) {
+    this.y = value;
+  }
+
   get left(): number {
     return this.x;
+  }
+
+  set left(value: number) {
+    this.x = value;
   }
 
   get right(): number {
     return this.x + this.w;
   }
 
+  set right(value: number) {
+    this.x = value - this.w;
+  }
+
   get bottom(): number {
     return this.y + this.h;
+  }
+
+  set bottom(value: number) {
+    this.y = value - this.h;
   }
 
   isBoundedWithin(parent: AxisAlignedBoundingBox): boolean {
