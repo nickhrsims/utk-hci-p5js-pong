@@ -1,5 +1,6 @@
 {
   "name": "hci-project2-group10-pong",
+  "type": "module",
   "version": "0.1.0",
   "description": "Pong but janky on purpose",
   "main": "dist/sketch.js",
@@ -8,6 +9,11 @@
   "license": "Beerware",
   "private": false,
   "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/p5": "^1.7.6",
+    "p5": "^1.11.3",
+    "rollup": "^4.35.0",
+    "tslib": "^2.8.1",
     "typescript": "^5.8.2"
   },
   "scripts": {
