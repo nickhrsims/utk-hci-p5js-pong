@@ -1,19 +1,22 @@
-import { Paddle } from './paddle';
+import { Game } from "./game";
 
-const SPEEDSCALE = 0.2;
-
-const paddle = Paddle.create({
-  position: {
-    x: 64,
-    y: 64,
+const game = new Game({
+  paddles: {
+    width: 16,
+    height: 64,
+    wallGap: 64,
+    speed: 0.25,
   },
-  size: {
-    w: 32,
-    h: 32,
+  ball: {
+    radius: 8,
+    speed: 0.2,
+  },
+  field: {
+    width: 400,
+    height: 400,
   },
 });
 
-const scaleMotion = (value: number) => value * SPEEDSCALE;
 
 function setup() {
   createCanvas(400, 400);
@@ -21,15 +24,7 @@ function setup() {
 
 function draw() {
   background(220);
-
-  const p1up = keyIsDown(UP_ARROW) ? 1 : 0;
-  const p1down = keyIsDown(DOWN_ARROW) ? 1 : 0;
-
-
-  paddle.velocity = [0, scaleMotion(p1down - p1up)]
-
-  paddle.update(deltaTime);
-  paddle.draw();
+  game.process(deltaTime);
 }
 
 (window as any).setup = setup;
