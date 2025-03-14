@@ -1,6 +1,6 @@
 # HCI Group 10 - Project 2
 
-__Group__: 2
+__Group__: 10
 
 __Members__:
 
