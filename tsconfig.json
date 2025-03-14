@@ -5,7 +5,7 @@
     "strict": true,
     "sourceMap": false,
     "moduleResolution": "node",
-    "outDir": "./dist/modules/"
+    "outDir": "./dist/"
   },
   "include": [
     "src/**/*.ts"
