@@ -1,0 +1,16 @@
+{
+  "name": "hci-project2-group10-pong",
+  "version": "0.1.0",
+  "description": "Pong but janky on purpose",
+  "main": "dist/sketch.js",
+  "repository": "git@github.com:jharris876/retroGame10.git",
+  "author": "Various, see README",
+  "license": "Beerware",
+  "private": false,
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}
