@@ -11,4 +11,9 @@ export class Ball extends Entity {
   static create(params: BallParams) {
     return new Ball(params);
   }
+
+  override draw(): void {
+    const radius = this.box.size[0];
+    circle(this.box.left, this.box.top, radius);
+  }
 }
