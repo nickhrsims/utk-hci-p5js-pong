@@ -18,6 +18,16 @@ export interface GameConfig {
   ball: {
     speed: number,
     radius: number,
+  },
+  inputs: {     // Defaults Only
+    p1: {
+      up: number,
+      down: number,
+    },
+    p2: {
+      up: number,
+      down: number,
+    }
   }
 };
 
@@ -85,17 +95,23 @@ export class Game {
   }
 
   process(delta: number) {
+    this.input();
     this.update(delta);
     // TODO: collisions
     this.draw();
   }
 
+  private input() {
+    const p1VelocityUp = keyIsDown(this.config.inputs.p1.up) ? 1 : 0;
+    const p1VelocityDown = keyIsDown(this.config.inputs.p1.down) ? 1 : 0;
+    const p2VelocityUp = keyIsDown(this.config.inputs.p2.up) ? 1 : 0;
+    const p2VelocityDown = keyIsDown(this.config.inputs.p2.down) ? 1 : 0;
+
+    this.leftPaddle.velocity = [0, scale(p1VelocityDown - p1VelocityUp, this.config.paddles.speed)];
+    this.rightPaddle.velocity = [0, scale(p2VelocityDown - p2VelocityUp, this.config.paddles.speed)];
+  }
+
   private update(delta: number) {
-    const p1up = keyIsDown(UP_ARROW) ? 1 : 0;
-    const p1down = keyIsDown(DOWN_ARROW) ? 1 : 0;
-
-    this.leftPaddle.velocity = [0, scale(p1down - p1up, this.config.paddles.speed)];
-
     this.leftPaddle.update(delta);
     this.rightPaddle.update(delta);
     this.ball.update(delta);
