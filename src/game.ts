@@ -89,7 +89,8 @@ export class Game {
     this.rightPaddle = rightPaddle;
     this.ball = ball;
 
-    this.resetField();
+    this.resetPaddles();
+    this.resetBall();
   }
 
   process(delta: number) {
@@ -99,9 +100,8 @@ export class Game {
     this.draw();
   }
 
-  resetField() {
-    const { leftPaddle, rightPaddle, ball, field, config } = this;
-
+  resetPaddles(): void {
+    const { leftPaddle, rightPaddle, field, config } = this;
     // Center-align paddles to field
     leftPaddle.position = field.center;
     rightPaddle.position = field.center;
@@ -109,6 +109,10 @@ export class Game {
     // Push paddles back against wall, leaving specified gap
     leftPaddle.box.left = field.left + config.paddles.wallGap;
     rightPaddle.box.right = field.right - config.paddles.wallGap;
+  }
+
+  resetBall(): void {
+    const { ball, field, config } = this;
 
     // Place ball center field
     ball.position = field.center;
