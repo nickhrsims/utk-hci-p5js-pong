@@ -93,4 +93,15 @@ export class AxisAlignedBoundingBox {
   isBoundedWithin(parent: AxisAlignedBoundingBox): boolean {
     return parent.left < this.left && this.right < parent.right && parent.top < this.top && this.bottom < parent.bottom;
   }
+
+  minkowskiDifference(rhs: AxisAlignedBoundingBox): AxisAlignedBoundingBox {
+    const { x, y, w, h } = this;
+    return AxisAlignedBoundingBox.create({
+      x: x - (rhs.x + rhs.w),
+      y: y - (rhs.y + rhs.h),
+      w: w + rhs.w,
+      h: h + rhs.h,
+    });
+  }
+
 }
