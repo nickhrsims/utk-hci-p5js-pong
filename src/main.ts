@@ -31,10 +31,11 @@ const game = new Game({
 
 function setup() {
   createCanvas(400, 400);
+  fill(255, 176, 0); // AMBER-CRT
 }
 
 function draw() {
-  background(220);
+  background(0);
   game.process(deltaTime);
 }
 
