@@ -97,7 +97,7 @@ export class Game {
   process(delta: number) {
     this.input();
     this.update(delta);
-    // TODO: collisions
+    this.collide();
     this.draw();
   }
 
@@ -117,10 +117,13 @@ export class Game {
     this.ball.update(delta);
   }
 
+  private collide() {
+
+  }
+
   private draw() {
     this.leftPaddle.draw();
     this.rightPaddle.draw();
     this.ball.draw();
   }
-
 }
