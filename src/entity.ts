@@ -37,11 +37,14 @@ export abstract class Entity {
     this.box.center = center;
   }
 
+  isColliding(rhs: Entity): boolean {
+    const origin: Vector2 = [0, 0];
+    return this.box.minkowskiDifference(rhs.box).contains(origin);
+  }
+
   protected constructor(readonly params: EntityParams) {
     const { position: { x, y }, size: { w, h } } = params;
     this.box = AxisAlignedBoundingBox.create({ x, y, w, h });
     this.velocity = [0, 0];
   }
-
-
 }
