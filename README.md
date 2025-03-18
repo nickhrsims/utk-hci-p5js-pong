@@ -10,3 +10,13 @@ __Members__:
 - Nicholas Sims
 
 __Project Description__: Pong w/ some awkward bonus features.
+
+## Build
+
+```sh
+yarn build
+```
+
+This will transpile source into a single p5js-compatible `sketch.js`.
+
+This may be manually copied into any active p5js instance.
