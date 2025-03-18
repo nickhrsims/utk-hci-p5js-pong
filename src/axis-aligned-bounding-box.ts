@@ -104,4 +104,12 @@ export class AxisAlignedBoundingBox {
     });
   }
 
+  contains(point: Vector2): boolean {
+    const { left, right, top, bottom } = this;
+    const [px, py] = point;
+    const horizontalOverlap = left < px && px < right;
+    const verticalOverlap = top < py && py < bottom;
+    return horizontalOverlap && verticalOverlap;
+  }
+
 }
