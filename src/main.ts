@@ -1,6 +1,10 @@
 import { Game } from "./game";
 
 const game = new Game({
+  score: {
+    textSize: 24,
+    limit: 7,
+  },
   paddles: {
     width: 4,
     height: 96,
@@ -31,6 +35,7 @@ const game = new Game({
 
 function setup() {
   createCanvas(400, 400);
+  textSize(game.config.score.textSize);
   fill(255, 176, 0); // AMBER-CRT
 }
 

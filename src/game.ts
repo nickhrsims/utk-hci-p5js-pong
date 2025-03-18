@@ -6,6 +6,10 @@ import { Paddle, PaddleParams } from "./paddle";
 const scale = (value: number, scalar: number) => value * scalar;
 
 export interface GameConfig {
+  score: {
+    textSize: number,
+    limit: number,
+  }
   field: {
     width: number,
     height: number,
@@ -35,7 +39,7 @@ export interface GameConfig {
 
 export class Game {
 
-  private config: GameConfig;
+  readonly config: GameConfig;
   private field: AxisAlignedBoundingBox;
   private leftPaddle: Paddle;
   private rightPaddle: Paddle;
