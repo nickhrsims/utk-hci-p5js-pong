@@ -1,3 +1,4 @@
+import { randomChoice } from "./auxiliary";
 import { AxisAlignedBoundingBox } from "./axis-aligned-bounding-box";
 import { Ball, BallParams } from "./ball";
 import { Paddle, PaddleParams } from "./paddle";
@@ -71,14 +72,6 @@ export class Game {
       }
     });
 
-    // Center-align paddles to field
-    leftPaddle.position = field.center;
-    rightPaddle.position = field.center;
-
-    // HACK: Encapsulation Violation
-    leftPaddle.box.left = field.left + config.paddles.wallGap;
-    rightPaddle.box.right = field.right - config.paddles.wallGap;
-
     const ball = Ball.create({
       position: defaultSpawnPosition,
       size: {
@@ -87,12 +80,12 @@ export class Game {
       }
     });
 
-    ball.position = field.center;
-
     this.field = field;
     this.leftPaddle = leftPaddle;
     this.rightPaddle = rightPaddle;
     this.ball = ball;
+
+    this.resetField();
   }
 
   process(delta: number) {
@@ -101,6 +94,29 @@ export class Game {
     this.collide();
     this.draw();
   }
+
+  resetField() {
+    const { leftPaddle, rightPaddle, ball, field, config } = this;
+
+    // Center-align paddles to field
+    leftPaddle.position = field.center;
+    rightPaddle.position = field.center;
+
+    // Push paddles back against wall, leaving specified gap
+    leftPaddle.box.left = field.left + config.paddles.wallGap;
+    rightPaddle.box.right = field.right - config.paddles.wallGap;
+
+    // Place ball center field
+    ball.position = field.center;
+
+    // "Flick" the ball towards a paddle
+    const [LEFT, RIGHT] = [-1, 1];
+    const [SLIGHTLY_UP, SLIGHTLY_DOWN] = [-1, 1];
+    const ballDirection = randomChoice([LEFT, RIGHT]);
+    const angle = randomChoice([SLIGHTLY_UP, SLIGHTLY_DOWN]);
+    ball.velocity = [scale(ballDirection, config.ball.speed), scale(angle, config.ball.verticalEnglish)];
+  }
+
 
   private input() {
     const p1VelocityUp = keyIsDown(this.config.inputs.p1.up) ? 1 : 0;
