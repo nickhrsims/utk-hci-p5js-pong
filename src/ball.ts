@@ -13,7 +13,8 @@ export class Ball extends Entity {
   }
 
   override draw(): void {
+    const [x, y] = this.box.center;
     const radius = this.box.size[0];
-    circle(this.box.left, this.box.top, radius);
+    circle(x, y, radius);
   }
 }
