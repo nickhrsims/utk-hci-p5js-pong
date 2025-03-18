@@ -43,6 +43,10 @@ export class AxisAlignedBoundingBox {
     this.y = y;
   }
 
+  get size(): Vector2 {
+    return [this.w, this.h];
+  }
+
   get center(): Vector2 {
     const { x, y, w, h } = this;
     return [
