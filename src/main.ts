@@ -10,6 +10,7 @@ const game = new Game({
   ball: {
     radius: 8,
     speed: 0.2,
+    verticalEnglish: 0.05,
   },
   field: {
     width: 400,

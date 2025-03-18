@@ -18,6 +18,7 @@ export interface GameConfig {
   ball: {
     speed: number,
     radius: number,
+    verticalEnglish: number,
   },
   inputs: {     // Defaults Only
     p1: {
