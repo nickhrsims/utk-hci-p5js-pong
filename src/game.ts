@@ -44,6 +44,8 @@ export class Game {
   private leftPaddle: Paddle;
   private rightPaddle: Paddle;
   private ball: Ball;
+  private leftScore: number;
+  private rightScore: number;
 
   constructor(config: GameConfig) {
 
@@ -88,6 +90,8 @@ export class Game {
     this.leftPaddle = leftPaddle;
     this.rightPaddle = rightPaddle;
     this.ball = ball;
+    this.leftScore = 0;
+    this.rightScore = 0;
 
     this.resetPaddles();
     this.resetBall();
@@ -143,12 +147,93 @@ export class Game {
   }
 
   private collide() {
+    const { leftPaddle, rightPaddle, ball, field } = this;
 
+    // --- Paddles <--> Field
+
+    if (leftPaddle.box.top < field.top) {
+      leftPaddle.box.top = field.top + 1;
+    }
+
+    if (leftPaddle.box.bottom > field.bottom) {
+      leftPaddle.box.bottom = field.bottom - 1;
+    }
+
+    if (rightPaddle.box.top < field.top) {
+      rightPaddle.box.top = field.top + 1;
+    }
+
+    if (rightPaddle.box.bottom > field.bottom) {
+      rightPaddle.box.bottom = field.bottom - 1;
+    }
+
+    // --- Ball <--> Paddles
+
+    if (ball.isColliding(leftPaddle)) {
+      this.bounceBallRight();
+    }
+
+    if (ball.isColliding(rightPaddle)) {
+      this.bounceBallLeft();
+    }
+
+    // --- Ball <--> Field
+
+    // If ball beyond top of field
+    if (ball.box.top < field.top) {
+      this.bounceBallDown();
+    }
+
+    // If ball beyond bottom of field
+    if (field.bottom < ball.box.bottom) {
+      this.bounceBallUp();
+    }
+
+    // --- Ball <--> Goals
+
+    if (ball.box.left < field.left) {
+      this.leftScore += 1;
+      this.resetBall();
+    }
+
+    if (ball.box.right > field.right) {
+      this.rightScore += 1;
+      this.resetBall();
+    }
   }
 
   private draw() {
+    const MARGIN = 4; // Used for almost anything
+    const RIGHT_MARGIN = 16; // Used for spacing the right-score from the right-side
+    text(str(this.leftScore), this.config.score.textSize + MARGIN, this.config.score.textSize + MARGIN);
+    text(str(this.rightScore), this.field.right - (this.config.score.textSize + RIGHT_MARGIN), this.config.score.textSize + MARGIN);
     this.leftPaddle.draw();
     this.rightPaddle.draw();
     this.ball.draw();
+  }
+
+  private bounceBallLeft() {
+    const { ball } = this;
+    const [horizontalVelocity, verticalVelocity] = ball.velocity;
+    ball.velocity = [-Math.abs(horizontalVelocity), verticalVelocity];
+  }
+
+  private bounceBallRight() {
+    const { ball } = this;
+    const [horizontalVelocity, verticalVelocity] = ball.velocity;
+    ball.velocity = [Math.abs(horizontalVelocity), verticalVelocity];
+  }
+
+
+  private bounceBallUp() {
+    const { ball } = this;
+    const [horizontalVelocity, verticalVelocity] = ball.velocity;
+    ball.velocity = [horizontalVelocity, -Math.abs(verticalVelocity)];
+  }
+
+  private bounceBallDown() {
+    const { ball } = this;
+    const [horizontalVelocity, verticalVelocity] = ball.velocity;
+    ball.velocity = [horizontalVelocity, Math.abs(verticalVelocity)];
   }
 }
