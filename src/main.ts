@@ -2,13 +2,13 @@ import { Game } from "./game";
 
 const game = new Game({
   paddles: {
-    width: 16,
-    height: 64,
+    width: 4,
+    height: 96,
     wallGap: 64,
     speed: 0.25,
   },
   ball: {
-    radius: 8,
+    radius: 6,
     speed: 0.2,
     verticalEnglish: 0.05,
   },
