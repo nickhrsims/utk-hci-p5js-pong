@@ -15,6 +15,7 @@ const game = new Game({
     radius: 6,
     speed: 0.2,
     verticalEnglish: 0.05,
+    activationDelay: 1200,
   },
   field: {
     width: 400,

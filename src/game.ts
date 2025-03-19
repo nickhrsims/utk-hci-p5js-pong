@@ -24,6 +24,7 @@ export interface GameConfig {
     speed: number,
     radius: number,
     verticalEnglish: number,
+    activationDelay: number,
   },
   inputs: {     // Defaults Only
     p1: {
@@ -120,13 +121,18 @@ export class Game {
 
     // Place ball center field
     ball.position = field.center;
+    ball.velocity = [0, 0];
 
     // "Flick" the ball towards a paddle
-    const [LEFT, RIGHT] = [-1, 1];
-    const [SLIGHTLY_UP, SLIGHTLY_DOWN] = [-1, 1];
-    const ballDirection = randomChoice([LEFT, RIGHT]);
-    const angle = randomChoice([SLIGHTLY_UP, SLIGHTLY_DOWN]);
-    ball.velocity = [scale(ballDirection, config.ball.speed), scale(angle, config.ball.verticalEnglish)];
+    const flickBall = () => {
+      const [LEFT, RIGHT] = [-1, 1];
+      const [SLIGHTLY_UP, SLIGHTLY_DOWN] = [-1, 1];
+      const ballDirection = randomChoice([LEFT, RIGHT]);
+      const angle = randomChoice([SLIGHTLY_UP, SLIGHTLY_DOWN]);
+      ball.velocity = [scale(ballDirection, config.ball.speed), scale(angle, config.ball.verticalEnglish)];
+    }
+
+    setTimeout(flickBall, config.ball.activationDelay);
   }
 
 
