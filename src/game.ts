@@ -106,7 +106,7 @@ export class Game {
     this.resetBall();
   }
 
-  process(delta: number) {
+  process(delta: number): void {
     this.input();
     this.update(delta);
     this.collide();
@@ -209,11 +209,17 @@ export class Game {
     else if (ball.box.left < field.left) {
       this.leftScore += 1;
       this.resetBall();
+      if (this.leftScore >= this.config.score.limit) {
+        this.process = this.gameover;
+      }
     }
 
     else if (ball.box.right > field.right) {
       this.rightScore += 1;
       this.resetBall();
+      if (this.rightScore >= this.config.score.limit) {
+        this.process = this.gameover;
+      }
     }
   }
 
@@ -255,5 +261,11 @@ export class Game {
     const { ball } = this;
     const [horizontalVelocity, verticalVelocity] = ball.direction;
     ball.direction = [horizontalVelocity, Math.abs(verticalVelocity)];
+  }
+
+  private gameover(): void {
+    const [x, y] = this.field.center;
+    this.draw();
+    text("GAME OVER", x, y - this.config.ball.radius * 8);
   }
 }

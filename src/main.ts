@@ -37,6 +37,7 @@ const game = new Game({
 
 function setup() {
   createCanvas(400, 400);
+  textAlign(CENTER, CENTER);
   textSize(game.config.score.textSize);
   fill(255, 176, 0); // AMBER-CRT
 }
