@@ -155,7 +155,7 @@ export class Game {
       leftPaddle.box.top = field.top + 1;
     }
 
-    if (leftPaddle.box.bottom > field.bottom) {
+    else if (leftPaddle.box.bottom > field.bottom) {
       leftPaddle.box.bottom = field.bottom - 1;
     }
 
@@ -163,7 +163,7 @@ export class Game {
       rightPaddle.box.top = field.top + 1;
     }
 
-    if (rightPaddle.box.bottom > field.bottom) {
+    else if (rightPaddle.box.bottom > field.bottom) {
       rightPaddle.box.bottom = field.bottom - 1;
     }
 
@@ -173,7 +173,7 @@ export class Game {
       this.bounceBallRight();
     }
 
-    if (ball.isColliding(rightPaddle)) {
+    else if (ball.isColliding(rightPaddle)) {
       this.bounceBallLeft();
     }
 
@@ -185,18 +185,18 @@ export class Game {
     }
 
     // If ball beyond bottom of field
-    if (field.bottom < ball.box.bottom) {
+    else if (field.bottom < ball.box.bottom) {
       this.bounceBallUp();
     }
 
     // --- Ball <--> Goals
 
-    if (ball.box.left < field.left) {
+    else if (ball.box.left < field.left) {
       this.leftScore += 1;
       this.resetBall();
     }
 
-    if (ball.box.right > field.right) {
+    else if (ball.box.right > field.right) {
       this.rightScore += 1;
       this.resetBall();
     }
