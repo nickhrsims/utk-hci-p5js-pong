@@ -138,7 +138,7 @@ export class Game {
     const releaseBall = () => {
       const [LEFT, RIGHT] = [-1, 1];
       const horizontalDirection = randomChoice([LEFT, RIGHT]);
-      ball.direction = [horizontalDirection, 0];
+      ball.direction = [horizontalDirection, -config.ball.initialSpeed / 2];
     }
 
     setTimeout(releaseBall, config.ball.activationDelay);
