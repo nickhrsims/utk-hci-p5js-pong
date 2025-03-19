@@ -10,6 +10,7 @@ export interface EntityParams {
     w: number,
     h: number,
   },
+  speed: number,
 };
 
 export abstract class Entity {
@@ -17,7 +18,8 @@ export abstract class Entity {
   // Who said encapsulation violation ever hurt anyone?
 
   box: AxisAlignedBoundingBox;
-  velocity: Vector2;
+  direction: Vector2;
+  speed: number;
 
   draw(): void {
     this.box.draw();
@@ -25,8 +27,9 @@ export abstract class Entity {
 
   update(delta: number): void {
     const [x, y] = this.position;
-    const [vx, vy] = this.velocity;
-    this.box.center = [x + (vx * delta), y + (vy * delta)];
+    const [vx, vy] = this.direction;
+    const { speed } = this;
+    this.box.center = [x + (vx * delta) * speed, y + (vy * delta) * speed];
   }
 
   get position(): Vector2 {
@@ -43,8 +46,9 @@ export abstract class Entity {
   }
 
   protected constructor(readonly params: EntityParams) {
-    const { position: { x, y }, size: { w, h } } = params;
+    const { position: { x, y }, size: { w, h }, speed } = params;
     this.box = AxisAlignedBoundingBox.create({ x, y, w, h });
-    this.velocity = [0, 0];
+    this.direction = [0, 0];
+    this.speed = speed;
   }
 }

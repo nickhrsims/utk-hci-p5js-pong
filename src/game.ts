@@ -1,9 +1,8 @@
 import { randomChoice } from "./auxiliary";
 import { AxisAlignedBoundingBox } from "./axis-aligned-bounding-box";
-import { Ball, BallParams } from "./ball";
-import { Paddle, PaddleParams } from "./paddle";
-
-const scale = (value: number, scalar: number) => value * scalar;
+import { Ball } from "./ball";
+import { Paddle } from "./paddle";
+import { Vector2 } from "./vector2";
 
 export interface GameConfig {
   score: {
@@ -21,9 +20,8 @@ export interface GameConfig {
     speed: number,
   },
   ball: {
-    baseSpeed: number,
-    speedScale: number,
-    maxSpeed: number,
+    initialSpeed: number,
+    speedStep: number,
     radius: number,
     verticalEnglish: number,
     activationDelay: number,
@@ -38,6 +36,11 @@ export interface GameConfig {
       down: number,
     }
   }
+};
+
+enum Direction {
+  left = -1,
+  right = 1,
 };
 
 export class Game {
@@ -70,7 +73,8 @@ export class Game {
       size: {
         w: config.paddles.width,
         h: config.paddles.height,
-      }
+      },
+      speed: config.paddles.speed,
     });
 
     const rightPaddle = Paddle.create({
@@ -78,15 +82,17 @@ export class Game {
       size: {
         w: config.paddles.width,
         h: config.paddles.height,
-      }
+      },
+      speed: config.paddles.speed,
     });
 
     const ball = Ball.create({
       position: defaultSpawnPosition,
       size: {
-        w: scale(config.ball.radius, 2),
-        h: scale(config.ball.radius, 2),
-      }
+        w: config.ball.radius * 2,
+        h: config.ball.radius * 2,
+      },
+      speed: config.ball.initialSpeed,
     });
 
     this.field = field;
@@ -123,18 +129,19 @@ export class Game {
 
     // Place ball center field
     ball.position = field.center;
-    ball.velocity = [0, 0];
 
-    // "Flick" the ball towards a paddle
-    const flickBall = () => {
+    // Scale velocity to default, and hold ball in place until ready for release
+    ball.direction = [0, 0];
+    ball.speed = config.ball.initialSpeed;
+
+    // "Release" the ball towards a paddle
+    const releaseBall = () => {
       const [LEFT, RIGHT] = [-1, 1];
-      const [SLIGHTLY_UP, SLIGHTLY_DOWN] = [-1, 1];
-      const ballDirection = randomChoice([LEFT, RIGHT]);
-      const angle = randomChoice([SLIGHTLY_UP, SLIGHTLY_DOWN]);
-      ball.velocity = [scale(ballDirection, config.ball.baseSpeed), scale(angle, config.ball.verticalEnglish)];
+      const horizontalDirection = randomChoice([LEFT, RIGHT]);
+      ball.direction = [horizontalDirection, 0];
     }
 
-    setTimeout(flickBall, config.ball.activationDelay);
+    setTimeout(releaseBall, config.ball.activationDelay);
   }
 
 
@@ -144,8 +151,8 @@ export class Game {
     const p2VelocityUp = keyIsDown(this.config.inputs.p2.up) ? 1 : 0;
     const p2VelocityDown = keyIsDown(this.config.inputs.p2.down) ? 1 : 0;
 
-    this.leftPaddle.velocity = [0, scale(p1VelocityDown - p1VelocityUp, this.config.paddles.speed)];
-    this.rightPaddle.velocity = [0, scale(p2VelocityDown - p2VelocityUp, this.config.paddles.speed)];
+    this.leftPaddle.direction = [0, p1VelocityDown - p1VelocityUp];
+    this.rightPaddle.direction = [0, p2VelocityDown - p2VelocityUp];
   }
 
   private update(delta: number) {
@@ -178,11 +185,11 @@ export class Game {
     // --- Ball <--> Paddles
 
     if (ball.isColliding(leftPaddle)) {
-      this.bounceBallRightAndSpeedup();
+      this.bounceBallOff(leftPaddle, Direction.right);
     }
 
     else if (ball.isColliding(rightPaddle)) {
-      this.bounceBallLeftAndSpeedup();
+      this.bounceBallOff(rightPaddle, Direction.left);
     }
 
     // --- Ball <--> Field
@@ -220,28 +227,33 @@ export class Game {
     this.ball.draw();
   }
 
-  private bounceBallLeftAndSpeedup() {
-    const { config, ball } = this;
-    const [horizontalVelocity, verticalVelocity] = ball.velocity;
-    ball.velocity = [-Math.abs(Math.min(scale(horizontalVelocity, config.ball.speedScale), config.ball.maxSpeed)), verticalVelocity];
-  }
+  private bounceBallOff(paddle: Paddle, direction: Direction) {
+    const [X, Y] = [0, 1];
+    const RANGE = 90;
+    const RADIANS = Math.PI / 180;
 
-  private bounceBallRightAndSpeedup() {
     const { config, ball } = this;
-    const [horizontalVelocity, verticalVelocity] = ball.velocity;
-    ball.velocity = [Math.abs(Math.min(scale(horizontalVelocity, config.ball.speedScale), config.ball.maxSpeed)), verticalVelocity];
-  }
 
+    // Normalized vertical distance between ball center and paddle center
+    const angularScalar = (ball.position[Y] - paddle.position[Y]) / config.paddles.height;
+
+    const phi = angularScalar * RANGE * RADIANS;
+
+    const collisionVector: Vector2 = [Math.cos(phi), Math.sin(phi)];
+
+    ball.direction = [collisionVector[X] * direction, collisionVector[Y]];
+    ball.speed += config.ball.speedStep;
+  }
 
   private bounceBallUp() {
     const { ball } = this;
-    const [horizontalVelocity, verticalVelocity] = ball.velocity;
-    ball.velocity = [horizontalVelocity, -Math.abs(verticalVelocity)];
+    const [horizontalVelocity, verticalVelocity] = ball.direction;
+    ball.direction = [horizontalVelocity, -Math.abs(verticalVelocity)];
   }
 
   private bounceBallDown() {
     const { ball } = this;
-    const [horizontalVelocity, verticalVelocity] = ball.velocity;
-    ball.velocity = [horizontalVelocity, Math.abs(verticalVelocity)];
+    const [horizontalVelocity, verticalVelocity] = ball.direction;
+    ball.direction = [horizontalVelocity, Math.abs(verticalVelocity)];
   }
 }
