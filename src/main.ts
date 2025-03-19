@@ -13,7 +13,9 @@ const game = new Game({
   },
   ball: {
     radius: 6,
-    speed: 0.2,
+    baseSpeed: 0.2,
+    speedScale: 1.1,
+    maxSpeed: 0.9,
     verticalEnglish: 0.05,
     activationDelay: 1200,
   },

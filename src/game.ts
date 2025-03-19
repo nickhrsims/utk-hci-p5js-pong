@@ -21,7 +21,9 @@ export interface GameConfig {
     speed: number,
   },
   ball: {
-    speed: number,
+    baseSpeed: number,
+    speedScale: number,
+    maxSpeed: number,
     radius: number,
     verticalEnglish: number,
     activationDelay: number,
@@ -129,7 +131,7 @@ export class Game {
       const [SLIGHTLY_UP, SLIGHTLY_DOWN] = [-1, 1];
       const ballDirection = randomChoice([LEFT, RIGHT]);
       const angle = randomChoice([SLIGHTLY_UP, SLIGHTLY_DOWN]);
-      ball.velocity = [scale(ballDirection, config.ball.speed), scale(angle, config.ball.verticalEnglish)];
+      ball.velocity = [scale(ballDirection, config.ball.baseSpeed), scale(angle, config.ball.verticalEnglish)];
     }
 
     setTimeout(flickBall, config.ball.activationDelay);
@@ -176,11 +178,11 @@ export class Game {
     // --- Ball <--> Paddles
 
     if (ball.isColliding(leftPaddle)) {
-      this.bounceBallRight();
+      this.bounceBallRightAndSpeedup();
     }
 
     else if (ball.isColliding(rightPaddle)) {
-      this.bounceBallLeft();
+      this.bounceBallLeftAndSpeedup();
     }
 
     // --- Ball <--> Field
@@ -218,16 +220,16 @@ export class Game {
     this.ball.draw();
   }
 
-  private bounceBallLeft() {
-    const { ball } = this;
+  private bounceBallLeftAndSpeedup() {
+    const { config, ball } = this;
     const [horizontalVelocity, verticalVelocity] = ball.velocity;
-    ball.velocity = [-Math.abs(horizontalVelocity), verticalVelocity];
+    ball.velocity = [-Math.abs(Math.min(scale(horizontalVelocity, config.ball.speedScale), config.ball.maxSpeed)), verticalVelocity];
   }
 
-  private bounceBallRight() {
-    const { ball } = this;
+  private bounceBallRightAndSpeedup() {
+    const { config, ball } = this;
     const [horizontalVelocity, verticalVelocity] = ball.velocity;
-    ball.velocity = [Math.abs(horizontalVelocity), verticalVelocity];
+    ball.velocity = [Math.abs(Math.min(scale(horizontalVelocity, config.ball.speedScale), config.ball.maxSpeed)), verticalVelocity];
   }
 
 
