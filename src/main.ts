@@ -96,7 +96,7 @@ function setup() {
   createCanvas(400, 400);
   textAlign(CENTER, CENTER);
   textSize(game.config.score.textSize);
-
+  setThemeAmber();
   createButton("NEW GAME").mouseClicked(newGame);
   createP();
   createButton("Ball Size (Tiny)").mouseClicked(setBallSizeTiny);
