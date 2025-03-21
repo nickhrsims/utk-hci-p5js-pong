@@ -11,6 +11,10 @@ __Members__:
 
 __Project Description__: Pong w/ some awkward bonus features.
 
+__Example:__
+
+![example-screenshot](./example.png)
+
 ## Play
 
 - <https://editor.p5js.org/nickhrsims/sketches/XJ9zpwitn>
