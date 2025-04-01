@@ -236,7 +236,7 @@ export class Game {
     else if (ball.box.left < field.left) {
       this.rightScore += 1;
       this.resetBall();
-      if (this.leftScore >= this.config.score.limit) {
+      if (this.rightScore >= this.config.score.limit) {
         this.process = this.gameover;
       }
     }
@@ -244,7 +244,7 @@ export class Game {
     else if (ball.box.right > field.right) {
       this.leftScore += 1;
       this.resetBall();
-      if (this.rightScore >= this.config.score.limit) {
+      if (this.leftScore >= this.config.score.limit) {
         this.process = this.gameover;
       }
     }
