@@ -1,4 +1,5 @@
 import { Game, GameConfig } from "./game";
+import { FuseballGame } from './fuseball-game';
 
 const gameConfig: GameConfig = {
   score: {
@@ -40,7 +41,13 @@ const gameConfig: GameConfig = {
 let game: Game = Game.create(gameConfig);
 
 const newGame = (): void => {
-  game = Game.create(gameConfig);
+  if (gameConfig.bonus.fuseball) {
+    gameConfig.paddles.height = 128;
+    game = FuseballGame.create(gameConfig);
+  } else {
+    gameConfig.paddles.height = 96;
+    game = Game.create(gameConfig);
+  }
 }
 
 const setBallSizeTiny = (): void => {
@@ -124,3 +131,4 @@ function draw() {
 
 (window as any).setup = setup;
 (window as any).draw = draw;
+newGame();
