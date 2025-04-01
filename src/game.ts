@@ -35,7 +35,10 @@ export interface GameConfig {
       up: number,
       down: number,
     }
-  }
+  },
+  bonus: {
+    fuseball: boolean,
+  },
 };
 
 export enum Direction {

@@ -31,7 +31,10 @@ const gameConfig: GameConfig = {
       up: 75,   // K
       down: 77, // M
     }
-  }
+  },
+  bonus: {
+    fuseball: false,
+  },
 };
 
 let game: Game = Game.create(gameConfig);
