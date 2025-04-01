@@ -46,7 +46,7 @@ export enum Direction {
   right = 1,
 };
 
-export interface GameProps {
+export interface GameParams {
   readonly config: GameConfig;
   field: AxisAlignedBoundingBox;
   leftPaddle: Paddle;
@@ -66,14 +66,14 @@ export class Game {
   protected leftScore: number;
   protected rightScore: number;
 
-  protected constructor(props: GameProps) {
-    this.config = props.config
-    this.field = props.field;
-    this.leftPaddle = props.leftPaddle;
-    this.rightPaddle = props.rightPaddle;
-    this.ball = props.ball;
-    this.leftScore = props.leftScore;
-    this.rightScore = props.rightScore;
+  protected constructor(params: GameParams) {
+    this.config = params.config
+    this.field = params.field;
+    this.leftPaddle = params.leftPaddle;
+    this.rightPaddle = params.rightPaddle;
+    this.ball = params.ball;
+    this.leftScore = params.leftScore;
+    this.rightScore = params.rightScore;
   }
 
   static create(config: GameConfig): Game {
@@ -116,7 +116,7 @@ export class Game {
     });
 
 
-    const props: GameProps = {
+    const params: GameParams = {
       config,
       field,
       leftPaddle,
@@ -126,7 +126,7 @@ export class Game {
       rightScore: 0,
     }
 
-    const game = new Game(props);
+    const game = new Game(params);
     game.resetPaddles();
     game.resetBall();
 
