@@ -38,27 +38,44 @@ export interface GameConfig {
   }
 };
 
-enum Direction {
+export enum Direction {
   left = -1,
   right = 1,
 };
 
+export interface GameProps {
+  readonly config: GameConfig;
+  field: AxisAlignedBoundingBox;
+  leftPaddle: Paddle;
+  rightPaddle: Paddle;
+  ball: Ball;
+  leftScore: number;
+  rightScore: number;
+}
+
 export class Game {
 
   readonly config: GameConfig;
-  private field: AxisAlignedBoundingBox;
-  private leftPaddle: Paddle;
-  private rightPaddle: Paddle;
-  private ball: Ball;
-  private leftScore: number;
-  private rightScore: number;
+  protected field: AxisAlignedBoundingBox;
+  protected leftPaddle: Paddle;
+  protected rightPaddle: Paddle;
+  protected ball: Ball;
+  protected leftScore: number;
+  protected rightScore: number;
 
-  constructor(config: GameConfig) {
+  protected constructor(props: GameProps) {
+    this.config = props.config
+    this.field = props.field;
+    this.leftPaddle = props.leftPaddle;
+    this.rightPaddle = props.rightPaddle;
+    this.ball = props.ball;
+    this.leftScore = props.leftScore;
+    this.rightScore = props.rightScore;
+  }
+
+  static create(config: GameConfig): Game {
 
     const defaultSpawnPosition = { x: 0, y: 0 };
-
-    // Save the config for later
-    this.config = config;
 
     const field = AxisAlignedBoundingBox.create({
       x: defaultSpawnPosition.x,
@@ -95,15 +112,22 @@ export class Game {
       speed: config.ball.initialSpeed,
     });
 
-    this.field = field;
-    this.leftPaddle = leftPaddle;
-    this.rightPaddle = rightPaddle;
-    this.ball = ball;
-    this.leftScore = 0;
-    this.rightScore = 0;
 
-    this.resetPaddles();
-    this.resetBall();
+    const props: GameProps = {
+      config,
+      field,
+      leftPaddle,
+      rightPaddle,
+      ball,
+      leftScore: 0,
+      rightScore: 0,
+    }
+
+    const game = new Game(props);
+    game.resetPaddles();
+    game.resetBall();
+
+    return game;
   }
 
   process(delta: number): void {
@@ -145,7 +169,7 @@ export class Game {
   }
 
 
-  private input() {
+  protected input() {
     const p1VelocityUp = keyIsDown(this.config.inputs.p1.up) ? 1 : 0;
     const p1VelocityDown = keyIsDown(this.config.inputs.p1.down) ? 1 : 0;
     const p2VelocityUp = keyIsDown(this.config.inputs.p2.up) ? 1 : 0;
@@ -155,13 +179,13 @@ export class Game {
     this.rightPaddle.direction = [0, p2VelocityDown - p2VelocityUp];
   }
 
-  private update(delta: number) {
+  protected update(delta: number) {
     this.leftPaddle.update(delta);
     this.rightPaddle.update(delta);
     this.ball.update(delta);
   }
 
-  private collide() {
+  protected collide() {
     const { leftPaddle, rightPaddle, ball, field } = this;
 
     // --- Paddles <--> Field
@@ -223,7 +247,7 @@ export class Game {
     }
   }
 
-  private draw() {
+  protected draw() {
     const MARGIN = 4; // Used for almost anything
     const RIGHT_MARGIN = 16; // Used for spacing the right-score from the right-side
     text(str(this.leftScore), this.config.score.textSize + MARGIN, this.config.score.textSize + MARGIN);
@@ -233,7 +257,7 @@ export class Game {
     this.ball.draw();
   }
 
-  private bounceBallOff(paddle: Paddle, direction: Direction) {
+  protected bounceBallOff(paddle: Paddle, direction: Direction) {
     const [X, Y] = [0, 1];
     const RANGE = 90;
     const RADIANS = Math.PI / 180;
@@ -251,19 +275,19 @@ export class Game {
     ball.speed += config.ball.speedStep;
   }
 
-  private bounceBallUp() {
+  protected bounceBallUp() {
     const { ball } = this;
     const [horizontalVelocity, verticalVelocity] = ball.direction;
     ball.direction = [horizontalVelocity, -Math.abs(verticalVelocity)];
   }
 
-  private bounceBallDown() {
+  protected bounceBallDown() {
     const { ball } = this;
     const [horizontalVelocity, verticalVelocity] = ball.direction;
     ball.direction = [horizontalVelocity, Math.abs(verticalVelocity)];
   }
 
-  private gameover(): void {
+  protected gameover(): void {
     const [x, y] = this.field.center;
     this.draw();
     text("GAME OVER", x, y - this.config.ball.radius * 8);

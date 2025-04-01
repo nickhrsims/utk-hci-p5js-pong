@@ -34,10 +34,10 @@ const gameConfig: GameConfig = {
   }
 };
 
-let game: Game = new Game(gameConfig);
+let game: Game = Game.create(gameConfig);
 
 const newGame = (): void => {
-  game = new Game(gameConfig);
+  game = Game.create(gameConfig);
 }
 
 const setBallSizeTiny = (): void => {
