@@ -14,3 +14,4 @@ export const range = (limit: number): number[] => {
   return result;
 }
 
+export const cartesianProduct = (A: any[], B: any[]) => (A.map(a => B.map(b => [a, b]))).flat() 
