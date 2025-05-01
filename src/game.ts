@@ -230,36 +230,43 @@ export class Game {
   }
 
   protected collide() {
-    /*
-    const { leftControlPaddles: leftPaddle, rightControlPaddles: rightPaddle, ball, field } = this;
+    const { leftPaddles, rightPaddles, ball, field } = this;
 
     // --- Paddles <--> Field
 
-    if (leftPaddle.box.top < field.top) {
-      leftPaddle.box.top = field.top + 1;
-    }
+    leftPaddles.forEach(([controller, ..._]) => {
+      if (controller.box.top < field.top) {
+        controller.box.top = field.top + 1;
+      }
+      else if (controller.box.bottom > field.bottom) {
+        controller.box.bottom = field.bottom - 1;
+      }
+    });
 
-    else if (leftPaddle.box.bottom > field.bottom) {
-      leftPaddle.box.bottom = field.bottom - 1;
-    }
+    rightPaddles.forEach(([controller, ..._]) => {
+      if (controller.box.top < field.top) {
+        controller.box.top = field.top + 1;
+      }
+      else if (controller.box.bottom > field.bottom) {
+        controller.box.bottom = field.bottom - 1;
+      }
+    });
 
-    if (rightPaddle.box.top < field.top) {
-      rightPaddle.box.top = field.top + 1;
-    }
-
-    else if (rightPaddle.box.bottom > field.bottom) {
-      rightPaddle.box.bottom = field.bottom - 1;
-    }
 
     // --- Ball <--> Paddles
 
-    if (ball.isColliding(leftPaddle)) {
-      this.bounceBallOff(leftPaddle, Direction.right);
-    }
+    leftPaddles.forEach(([_, tuples]) => tuples.forEach(([collider, ..._]) => {
+      if (ball.isColliding(collider)) {
+        this.bounceBallOff(collider, Direction.right);
+      }
+    }));
 
-    else if (ball.isColliding(rightPaddle)) {
-      this.bounceBallOff(rightPaddle, Direction.left);
-    }
+    rightPaddles.forEach(([_, tuples]) => tuples.forEach(([collider, ..._]) => {
+      if (ball.isColliding(collider)) {
+        this.bounceBallOff(collider, Direction.left);
+      }
+    }));
+
 
     // --- Ball <--> Field
 
@@ -290,7 +297,7 @@ export class Game {
         this.process = this.gameover;
       }
     }
-    */
+
   }
 
   protected draw() {
@@ -317,18 +324,15 @@ export class Game {
     const RADIANS = Math.PI / 180;
 
     const { config, ball } = this;
-    /* FIXME: 
-     
-        // Normalized vertical distance between ball center and paddle center
-        const angularScalar = (ball.position[Y] - paddle.position[Y]) / config.paddles.height;
-    
-        const phi = angularScalar * RANGE * RADIANS;
-    
-        const collisionVector: Vector2 = [Math.cos(phi), Math.sin(phi)];
-    
-        ball.direction = [collisionVector[X] * direction, collisionVector[Y]];
-        ball.speed += config.ball.speedStep;
-        */
+    // Normalized vertical distance between ball center and paddle center
+    const angularScalar = (ball.position[Y] - paddle.position[Y]) / paddle.box.size[Y];
+
+    const phi = angularScalar * RANGE * RADIANS;
+
+    const collisionVector: Vector2 = [Math.cos(phi), Math.sin(phi)];
+
+    ball.direction = [collisionVector[X] * direction, collisionVector[Y]];
+    ball.speed += config.ball.speedStep;
   }
 
   protected bounceBallUp() {
