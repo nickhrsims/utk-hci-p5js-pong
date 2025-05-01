@@ -226,7 +226,7 @@ export class Game {
         collider.box.top = controller.box.top + offset;
       });
     });
-    //this.ball.update(delta);
+    this.ball.update(delta);
   }
 
   protected collide() {
