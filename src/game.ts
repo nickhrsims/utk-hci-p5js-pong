@@ -212,7 +212,6 @@ export class Game {
   }
 
   protected update(delta: number) {
-    const [X, Y] = [0, 1]; // Vector2 X-and-Y-axis coordinate indices
     this.leftPaddles.forEach(([controller, tuples]) => {
       controller.update(delta);
       tuples.forEach(([collider, offset]) => {
