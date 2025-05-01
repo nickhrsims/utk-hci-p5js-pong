@@ -7,9 +7,14 @@ const gameConfig: GameConfig = {
   },
   paddles: {
     width: 4,
-    height: 96,
-    wallGap: 64,
+    gap: 64,
     speed: 0.25,
+    controllers: [
+      {
+        height: 99,
+        colliderCount: 2,
+      }
+    ]
   },
   ball: {
     radius: 6,
@@ -40,7 +45,6 @@ const gameConfig: GameConfig = {
 let game: Game = Game.create(gameConfig);
 
 const newGame = (): void => {
-  gameConfig.paddles.height = 96;
   game = Game.create(gameConfig);
 }
 

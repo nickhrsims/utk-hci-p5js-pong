@@ -1,8 +1,14 @@
-import { randomChoice } from "./auxiliary";
+import { cartesianProduct, randomChoice, range } from "./auxiliary";
 import { AxisAlignedBoundingBox } from "./axis-aligned-bounding-box";
 import { Ball } from "./ball";
 import { Paddle } from "./paddle";
 import { Vector2 } from "./vector2";
+
+type ColliderTuple = [Paddle, number]
+type ColliderGroup = ColliderTuple[];
+type PaddleGroup = [Paddle, ColliderGroup][];
+
+const getSegmentsPerCollider = (colliderCount: number): number => 2 * colliderCount - 1;
 
 export interface GameConfig {
   score: {
@@ -15,9 +21,12 @@ export interface GameConfig {
   },
   paddles: {
     width: number,
-    height: number,
-    wallGap: number,
     speed: number,
+    gap: number,
+    controllers: {
+      height: number,
+      colliderCount: number,
+    }[]
   },
   ball: {
     initialSpeed: number,
@@ -49,8 +58,8 @@ export enum Direction {
 export interface GameParams {
   readonly config: GameConfig;
   field: AxisAlignedBoundingBox;
-  leftPaddle: Paddle;
-  rightPaddle: Paddle;
+  leftPaddles: PaddleGroup;
+  rightPaddles: PaddleGroup;
   ball: Ball;
   leftScore: number;
   rightScore: number;
@@ -60,8 +69,8 @@ export class Game {
 
   readonly config: GameConfig;
   protected field: AxisAlignedBoundingBox;
-  protected leftPaddle: Paddle;
-  protected rightPaddle: Paddle;
+  protected leftPaddles: PaddleGroup;
+  protected rightPaddles: PaddleGroup;
   protected ball: Ball;
   protected leftScore: number;
   protected rightScore: number;
@@ -69,8 +78,8 @@ export class Game {
   protected constructor(params: GameParams) {
     this.config = params.config
     this.field = params.field;
-    this.leftPaddle = params.leftPaddle;
-    this.rightPaddle = params.rightPaddle;
+    this.leftPaddles = params.leftPaddles;
+    this.rightPaddles = params.rightPaddles;
     this.ball = params.ball;
     this.leftScore = params.leftScore;
     this.rightScore = params.rightScore;
@@ -87,25 +96,41 @@ export class Game {
       h: config.field.height,
     });
 
-    // Configure each paddle
-    const leftPaddle = Paddle.create({
-      position: defaultSpawnPosition,
-      size: {
-        w: config.paddles.width,
-        h: config.paddles.height,
-      },
-      speed: config.paddles.speed,
+    const createPaddleGroup = (): PaddleGroup => config.paddles.controllers.map((controllerConfig) => {
+      // Create paddle
+      const controller = Paddle.create({
+        position: defaultSpawnPosition,
+        size: {
+          w: config.paddles.width,
+          h: controllerConfig.height,
+        },
+        speed: config.paddles.speed,
+      });
+      // Create colliders
+      const segmentsCount = getSegmentsPerCollider(controllerConfig.colliderCount);
+      const segmentHeight = Math.floor(controllerConfig.height / segmentsCount);
+      const colliders = range(controllerConfig.colliderCount).map((index): ColliderTuple => {
+        const colliderOffset = 2 * index * segmentHeight;
+        const collider = Paddle.create({
+          position: defaultSpawnPosition, // colliders are put in place during each update phase
+          size: {
+            w: config.paddles.width,
+            h: segmentHeight,
+          },
+          // colliders do not have real velocity
+          speed: 0,
+        });
+        return [collider, colliderOffset];
+      })
+      // return paddle
+      return [controller, colliders];
     });
 
-    const rightPaddle = Paddle.create({
-      position: defaultSpawnPosition,
-      size: {
-        w: config.paddles.width,
-        h: config.paddles.height,
-      },
-      speed: config.paddles.speed,
-    });
+    // Configure each control path with colliders
+    const leftPaddles: PaddleGroup = createPaddleGroup();
+    const rightPaddles: PaddleGroup = createPaddleGroup();
 
+    // Create ball
     const ball = Ball.create({
       position: defaultSpawnPosition,
       size: {
@@ -115,12 +140,11 @@ export class Game {
       speed: config.ball.initialSpeed,
     });
 
-
     const params: GameParams = {
       config,
       field,
-      leftPaddle,
-      rightPaddle,
+      leftPaddles,
+      rightPaddles,
       ball,
       leftScore: 0,
       rightScore: 0,
@@ -141,14 +165,15 @@ export class Game {
   }
 
   resetPaddles(): void {
-    const { leftPaddle, rightPaddle, field, config } = this;
-    // Center-align paddles to field
-    leftPaddle.position = field.center;
-    rightPaddle.position = field.center;
-
-    // Push paddles back against wall, leaving specified gap
-    leftPaddle.box.left = field.left + config.paddles.wallGap;
-    rightPaddle.box.right = field.right - config.paddles.wallGap;
+    const { leftPaddles, rightPaddles, field, config } = this;
+    leftPaddles.forEach(([controller, ..._], index) => {
+      controller.position = field.center;
+      controller.box.left = field.left + (config.paddles.gap * (index + 1));
+    });
+    rightPaddles.forEach(([controller, ..._], index) => {
+      controller.position = field.center;
+      controller.box.right = field.right - (config.paddles.gap * (index + 1));
+    });
   }
 
   resetBall(): void {
@@ -178,18 +203,36 @@ export class Game {
     const p2VelocityUp = keyIsDown(this.config.inputs.p2.up) ? 1 : 0;
     const p2VelocityDown = keyIsDown(this.config.inputs.p2.down) ? 1 : 0;
 
-    this.leftPaddle.direction = [0, p1VelocityDown - p1VelocityUp];
-    this.rightPaddle.direction = [0, p2VelocityDown - p2VelocityUp];
+    this.leftPaddles.forEach(([controller, ..._]) => {
+      controller.direction = [0, p1VelocityDown - p1VelocityUp];
+    })
+    this.rightPaddles.forEach(([controller, ..._]) => {
+      controller.direction = [0, p2VelocityDown - p2VelocityUp];
+    });
   }
 
   protected update(delta: number) {
-    this.leftPaddle.update(delta);
-    this.rightPaddle.update(delta);
-    this.ball.update(delta);
+    const [X, Y] = [0, 1]; // Vector2 X-and-Y-axis coordinate indices
+    this.leftPaddles.forEach(([controller, tuples]) => {
+      controller.update(delta);
+      tuples.forEach(([collider, offset], index) => {
+        collider.box.left = controller.box.left;
+        collider.box.top = controller.box.top + offset;
+      });
+    });
+    this.rightPaddles.forEach(([controller, tuples]) => {
+      controller.update(delta);
+      tuples.forEach(([collider, offset], index) => {
+        collider.box.left = controller.box.left;
+        collider.box.top = controller.box.top + offset;
+      });
+    });
+    //this.ball.update(delta);
   }
 
   protected collide() {
-    const { leftPaddle, rightPaddle, ball, field } = this;
+    /*
+    const { leftControlPaddles: leftPaddle, rightControlPaddles: rightPaddle, ball, field } = this;
 
     // --- Paddles <--> Field
 
@@ -248,6 +291,7 @@ export class Game {
         this.process = this.gameover;
       }
     }
+    */
   }
 
   protected draw() {
@@ -255,8 +299,16 @@ export class Game {
     const RIGHT_MARGIN = 16; // Used for spacing the right-score from the right-side
     text(str(this.leftScore), this.config.score.textSize + MARGIN, this.config.score.textSize + MARGIN);
     text(str(this.rightScore), this.field.right - (this.config.score.textSize + RIGHT_MARGIN), this.config.score.textSize + MARGIN);
-    this.leftPaddle.draw();
-    this.rightPaddle.draw();
+    this.leftPaddles.forEach(([_, tuples]) => {
+      tuples.forEach(([collider, _]) => {
+        collider.draw();
+      });
+    });
+    this.rightPaddles.forEach(([_, tuples]) => {
+      tuples.forEach(([collider, _]) => {
+        collider.draw();
+      });
+    });
     this.ball.draw();
   }
 
@@ -266,16 +318,18 @@ export class Game {
     const RADIANS = Math.PI / 180;
 
     const { config, ball } = this;
-
-    // Normalized vertical distance between ball center and paddle center
-    const angularScalar = (ball.position[Y] - paddle.position[Y]) / config.paddles.height;
-
-    const phi = angularScalar * RANGE * RADIANS;
-
-    const collisionVector: Vector2 = [Math.cos(phi), Math.sin(phi)];
-
-    ball.direction = [collisionVector[X] * direction, collisionVector[Y]];
-    ball.speed += config.ball.speedStep;
+    /* FIXME: 
+     
+        // Normalized vertical distance between ball center and paddle center
+        const angularScalar = (ball.position[Y] - paddle.position[Y]) / config.paddles.height;
+    
+        const phi = angularScalar * RANGE * RADIANS;
+    
+        const collisionVector: Vector2 = [Math.cos(phi), Math.sin(phi)];
+    
+        ball.direction = [collisionVector[X] * direction, collisionVector[Y]];
+        ball.speed += config.ball.speedStep;
+        */
   }
 
   protected bounceBallUp() {
