@@ -1,4 +1,4 @@
-import { cartesianProduct, randomChoice, range } from "./auxiliary";
+import { randomChoice, range } from "./auxiliary";
 import { AxisAlignedBoundingBox } from "./axis-aligned-bounding-box";
 import { Ball } from "./ball";
 import { Paddle } from "./paddle";
