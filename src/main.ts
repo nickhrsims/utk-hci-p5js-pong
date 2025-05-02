@@ -2,7 +2,7 @@ import { Game, GameConfig } from "./game";
 
 const gameConfig: GameConfig = {
   score: {
-    textSize: 24,
+    textSize: 12,
     limit: 7,
   },
   paddles: {
