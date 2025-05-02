@@ -8,7 +8,7 @@ export class Ball extends Entity {
     super(params);
   }
 
-  static create(params: BallParams) {
+  static create(params: BallParams): Ball {
     return new Ball(params);
   }
 
