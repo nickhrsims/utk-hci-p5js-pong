@@ -101,7 +101,7 @@ const setThemeWhite = (): void => {
 let backgroundLumosity = 0;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(gameConfig.field.width, gameConfig.field.height);
   textAlign(CENTER, CENTER);
   textSize(game.config.score.textSize);
   setThemeAmber();
