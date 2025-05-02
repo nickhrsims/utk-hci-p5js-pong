@@ -65,6 +65,54 @@ export interface GameParams {
   rightScore: number;
 }
 
+interface RoundData {
+  /* Duration is only track while ball is actually in motion. */
+  duration: number;
+};
+
+class MetricsContainer {
+  /* Where to draw debug output? */
+  textPosition: Vector2;
+
+  /* Round data. */
+  rounds: RoundData[];
+
+  constructor(textPosition: Vector2) {
+    this.textPosition = textPosition;
+    this.rounds = [];
+  }
+
+  get currentRound() {
+    return this.rounds[this.rounds.length - 1];
+  }
+
+  /**
+   * HACK: Violates responsibility segregation, is JSON and File aware.
+   * NOTE: Does not export final round by-design
+   *       (because its either a game over or current round)
+   */
+  exportToJson(filename: string): void {
+    saveJSON({ rounds: this.rounds.slice(0, this.rounds.length - 1) }, filename);
+  }
+
+  draw(): void {
+    const roundDurationSeconds = Math.floor(this.currentRound.duration / 1000);
+    text(str(roundDurationSeconds), this.textPosition[0], this.textPosition[1]);
+  }
+
+  nextRound(): void {
+    this.rounds.push({ duration: 0 })
+  }
+
+  logBallMotion(delta: number): void {
+    this.currentRound.duration += delta;
+  }
+
+  logGoal(): void {
+    this.nextRound();
+  }
+}
+
 export class Game {
 
   readonly config: GameConfig;
@@ -74,6 +122,7 @@ export class Game {
   protected ball: Ball;
   protected leftScore: number;
   protected rightScore: number;
+  protected metrics: MetricsContainer;
 
   protected constructor(params: GameParams) {
     this.config = params.config
@@ -83,6 +132,12 @@ export class Game {
     this.ball = params.ball;
     this.leftScore = params.leftScore;
     this.rightScore = params.rightScore;
+    this.metrics = new MetricsContainer(
+      [
+        this.field.bottom - (this.config.score.textSize * 2),
+        this.field.right - this.config.score.textSize
+      ]
+    );
   }
 
   static create(config: GameConfig): Game {
@@ -138,6 +193,7 @@ export class Game {
         h: config.ball.radius * 2,
       },
       speed: config.ball.initialSpeed,
+      logMotion: (delta: number): void => { game.metrics.logBallMotion(delta) },
     });
 
     const params: GameParams = {
@@ -162,6 +218,10 @@ export class Game {
     this.update(delta);
     this.collide();
     this.draw();
+  }
+
+  exportMetrics(): void {
+    this.metrics.exportToJson('metrics.json');
   }
 
   resetPaddles(): void {
@@ -195,7 +255,6 @@ export class Game {
 
     setTimeout(releaseBall, config.ball.activationDelay);
   }
-
 
   protected input() {
     const p1VelocityUp = keyIsDown(this.config.inputs.p1.up) ? 1 : 0;
@@ -284,6 +343,7 @@ export class Game {
 
     else if (ball.box.left < field.left) {
       this.rightScore += 1;
+      this.metrics.logGoal();
       this.resetBall();
       if (this.rightScore >= this.config.score.limit) {
         this.process = this.gameover;
@@ -292,6 +352,7 @@ export class Game {
 
     else if (ball.box.right > field.right) {
       this.leftScore += 1;
+      this.metrics.logGoal();
       this.resetBall();
       if (this.leftScore >= this.config.score.limit) {
         this.process = this.gameover;
@@ -316,6 +377,10 @@ export class Game {
       });
     });
     this.ball.draw();
+  }
+
+  public drawDebug() {
+    this.metrics.draw();
   }
 
   protected bounceBallOff(paddle: Paddle, direction: Direction) {

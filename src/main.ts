@@ -106,6 +106,7 @@ function setup() {
   textSize(game.config.score.textSize);
   setThemeAmber();
   createButton("NEW GAME").mouseClicked(newGame);
+  createButton("Save Metrics").mouseClicked(() => game.exportMetrics());
   createP();
   createButton("Ball Size (Tiny)").mouseClicked(setBallSizeTiny);
   createButton("Ball Size (Normal)").mouseClicked(setBallSizeNormal);
@@ -119,12 +120,12 @@ function setup() {
   createButton("Green Theme").mouseClicked(setThemeGreen);
   createButton("Black Theme").mouseClicked(setThemeBlack);
   createButton("White Theme").mouseClicked(setThemeWhite);
-
 }
 
 function draw() {
   background(backgroundLumosity);
   game.process(deltaTime);
+  game.drawDebug();
 }
 
 (window as any).setup = setup;
