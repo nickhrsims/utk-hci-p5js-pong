@@ -80,6 +80,7 @@ class MetricsContainer {
   constructor(textPosition: Vector2) {
     this.textPosition = textPosition;
     this.rounds = [];
+    this.nextRound();
   }
 
   get currentRound() {
