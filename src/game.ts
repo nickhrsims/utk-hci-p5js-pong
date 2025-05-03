@@ -2,6 +2,7 @@ import { randomChoice, range } from "./auxiliary";
 import { AxisAlignedBoundingBox } from "./axis-aligned-bounding-box";
 import { Ball } from "./ball";
 import { Paddle } from "./paddle";
+import { Goal } from './goal';
 import { Vector2 } from "./vector2";
 import { PointLedger } from './point-ledger';
 
@@ -28,6 +29,10 @@ export interface GameConfig {
       height: number,
       colliderCount: number,
     }[]
+  },
+  goal: {
+    width: number,
+    heightRatio: number,
   },
   ball: {
     initialSpeed: number,
@@ -61,6 +66,8 @@ export interface GameParams {
   field: AxisAlignedBoundingBox;
   leftPaddles: PaddleGroup;
   rightPaddles: PaddleGroup;
+  leftGoal: Goal;
+  rightGoal: Goal;
   ball: Ball;
   leftScore: number;
   rightScore: number;
@@ -72,6 +79,8 @@ export class Game {
   protected field: AxisAlignedBoundingBox;
   protected leftPaddles: PaddleGroup;
   protected rightPaddles: PaddleGroup;
+  protected leftGoal: Goal;
+  protected rightGoal: Goal;
   protected ball: Ball;
   protected leftScore: number;
   protected rightScore: number;
@@ -82,9 +91,12 @@ export class Game {
     this.field = params.field;
     this.leftPaddles = params.leftPaddles;
     this.rightPaddles = params.rightPaddles;
+    this.leftGoal = params.leftGoal;
+    this.rightGoal = params.rightGoal;
     this.ball = params.ball;
     this.leftScore = params.leftScore;
     this.rightScore = params.rightScore;
+    // NOTE: Does not support injection by-design.
     this.ledger = PointLedger.create();
   }
 
@@ -133,6 +145,30 @@ export class Game {
     const leftPaddles: PaddleGroup = createPaddleGroup();
     const rightPaddles: PaddleGroup = createPaddleGroup();
 
+    // Configure each goal at affiliated field edge
+    const leftGoal = Goal.create({
+      position: defaultSpawnPosition,
+      size: {
+        w: config.goal.width,
+        h: config.field.height / config.goal.heightRatio,
+      },
+      speed: 0,
+    });
+
+    const rightGoal = Goal.create({
+      position: defaultSpawnPosition,
+      size: {
+        w: config.goal.width,
+        h: config.field.height / config.goal.heightRatio,
+      },
+      speed: 0,
+    });
+
+    leftGoal.position = field.center;
+    rightGoal.position = field.center;
+    leftGoal.box.left = field.left;
+    rightGoal.box.right = field.right;
+
     // Create ball
     const ball = Ball.create({
       position: defaultSpawnPosition,
@@ -149,6 +185,8 @@ export class Game {
       field,
       leftPaddles,
       rightPaddles,
+      leftGoal,
+      rightGoal,
       ball,
       leftScore: 0,
       rightScore: 0,
@@ -237,7 +275,7 @@ export class Game {
   }
 
   protected collide() {
-    const { leftPaddles, rightPaddles, ball, field } = this;
+    const { leftPaddles, rightPaddles, leftGoal, rightGoal, ball, field } = this;
 
     // --- Paddles <--> Field
 
@@ -264,12 +302,14 @@ export class Game {
 
     leftPaddles.forEach(([_, tuples]) => tuples.forEach(([collider, ..._]) => {
       if (ball.isColliding(collider)) {
+        this.ledger.logLeftHit();
         this.bounceBallOff(collider, Direction.right);
       }
     }));
 
     rightPaddles.forEach(([_, tuples]) => tuples.forEach(([collider, ..._]) => {
       if (ball.isColliding(collider)) {
+        this.ledger.logRightHit();
         this.bounceBallOff(collider, Direction.left);
       }
     }));
@@ -287,9 +327,17 @@ export class Game {
       this.bounceBallUp();
     }
 
+    else if (ball.box.left < field.left) {
+      this.bounceBallRight();
+    }
+
+    else if (field.right < ball.box.right) {
+      this.bounceBallLeft();
+    }
+
     // --- Ball <--> Goals
 
-    else if (ball.box.left < field.left) {
+    else if (ball.isColliding(leftGoal)) {
       this.rightScore += 1;
       this.resetBall();
       if (this.rightScore >= this.config.score.limit) {
@@ -300,7 +348,7 @@ export class Game {
       }
     }
 
-    else if (ball.box.right > field.right) {
+    else if (ball.isColliding(rightGoal)) {
       this.leftScore += 1;
       this.resetBall();
       if (this.leftScore >= this.config.score.limit) {
@@ -328,6 +376,8 @@ export class Game {
         collider.draw();
       });
     });
+    this.leftGoal.draw();
+    this.rightGoal.draw();
     this.ball.draw();
   }
 
@@ -364,6 +414,18 @@ export class Game {
     const { ball } = this;
     const [horizontalVelocity, verticalVelocity] = ball.direction;
     ball.direction = [horizontalVelocity, Math.abs(verticalVelocity)];
+  }
+
+  protected bounceBallLeft() {
+    const { ball } = this;
+    const [horizontalVelocity, verticalVelocity] = ball.direction;
+    ball.direction = [-Math.abs(horizontalVelocity), verticalVelocity];
+  }
+
+  protected bounceBallRight() {
+    const { ball } = this;
+    const [horizontalVelocity, verticalVelocity] = ball.direction;
+    ball.direction = [Math.abs(horizontalVelocity), verticalVelocity];
   }
 
   protected gameover(): void {

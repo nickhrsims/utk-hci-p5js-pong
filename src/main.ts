@@ -16,6 +16,10 @@ const gameConfig: GameConfig = {
       }
     ]
   },
+  goal: {
+    width: 8,
+    heightRatio: 4,
+  },
   ball: {
     radius: 6,
     initialSpeed: 0.2,
