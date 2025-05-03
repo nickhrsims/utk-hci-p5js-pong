@@ -53,10 +53,10 @@ export class PointLedger {
 
   logPoint(scoredBy: 'left' | 'right', gameOver: boolean): void {
     this.records.push(PointRecord.create({
+      id: this.records.length + 1,
+      duration: this.state.pointDuration,
       scoredBy,
       gameOver,
-      id: this.records.length + 1,
-      duration: this.state.pointDuration
     }));
     this.state = new LedgerState();
   }
