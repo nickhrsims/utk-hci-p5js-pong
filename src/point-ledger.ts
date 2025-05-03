@@ -7,6 +7,12 @@ interface PointRecordProps {
   scoredBy: 'left' | 'right' | 'none';
   /* Is game over? */
   gameOver: boolean;
+  /* Num Hits by left or right player */
+  hitsLeft: number;
+  hitsRight: number;
+  /* Total Hits left/right */
+  // totalHitsLeft: number;
+  // totalHitsRight: number;
 };
 
 class PointRecord {
@@ -51,16 +57,17 @@ export class PointLedger {
     return this.records.map((record) => record.props);
   }
 
-  logPoint(scoredBy: 'left' | 'right', gameOver: boolean): void {
+  logPoint(scoredBy: 'left' | 'right', gameOver: boolean, hitsLeft: number, hitsRight: number): void {
     this.records.push(PointRecord.create({
       point: this.records.length + 1,
       duration: this.state.pointDuration,
       scoredBy,
       gameOver,
+      hitsLeft,
+      hitsRight,
     }));
     this.state = new LedgerState();
   }
-
 
   logBallMotion(delta: number): void {
     this.state.pointDuration += delta;

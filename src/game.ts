@@ -76,6 +76,8 @@ export class Game {
   protected leftScore: number;
   protected rightScore: number;
   protected ledger: PointLedger;
+  protected leftHits: number;
+  protected rightHits: number;
 
   protected constructor(params: GameParams) {
     this.config = params.config
@@ -86,6 +88,8 @@ export class Game {
     this.leftScore = params.leftScore;
     this.rightScore = params.rightScore;
     this.ledger = PointLedger.create();
+    this.leftHits = 0;
+    this.rightHits = 0;
   }
 
   static create(config: GameConfig): Game {
@@ -264,12 +268,14 @@ export class Game {
 
     leftPaddles.forEach(([_, tuples]) => tuples.forEach(([collider, ..._]) => {
       if (ball.isColliding(collider)) {
+        this.leftHits += 1;
         this.bounceBallOff(collider, Direction.right);
       }
     }));
 
     rightPaddles.forEach(([_, tuples]) => tuples.forEach(([collider, ..._]) => {
       if (ball.isColliding(collider)) {
+        this.rightHits += 1;
         this.bounceBallOff(collider, Direction.left);
       }
     }));
@@ -294,10 +300,14 @@ export class Game {
       this.resetBall();
       if (this.rightScore >= this.config.score.limit) {
         this.process = this.gameover;
-        this.ledger.logPoint('right', true);
+        this.ledger.logPoint('right', true, this.leftHits, this.rightHits);
       } else {
-        this.ledger.logPoint('right', false);
+        this.ledger.logPoint('right', false, this.leftHits, this.rightHits);
       }
+
+      //Reset
+      this.leftHits = 0;
+      this.rightHits = 0;
     }
 
     else if (ball.box.right > field.right) {
@@ -305,10 +315,14 @@ export class Game {
       this.resetBall();
       if (this.leftScore >= this.config.score.limit) {
         this.process = this.gameover;
-        this.ledger.logPoint('left', true);
+        this.ledger.logPoint('left', true, this.leftHits, this.rightHits);
       } else {
-        this.ledger.logPoint('left', false);
+        this.ledger.logPoint('left', false, this.leftHits, this.rightHits);
       }
+
+      //Reset
+      this.leftHits = 0;
+      this.rightHits = 0;
     }
 
   }
