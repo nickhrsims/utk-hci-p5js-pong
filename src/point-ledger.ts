@@ -58,6 +58,7 @@ export class PointLedger {
       id: this.records.length + 1,
       duration: this.state.pointDuration
     }));
+    this.state = new LedgerState();
   }
 
 
