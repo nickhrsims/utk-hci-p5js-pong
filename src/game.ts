@@ -168,7 +168,7 @@ export class Game {
     this.draw();
   }
 
-  aggregateMetrics() {
+  aggregatePointRecords() {
     return this.ledger.aggregate();
   }
 

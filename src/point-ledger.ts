@@ -1,6 +1,6 @@
 interface PointRecordProps {
   /* Point number. */
-  id: number;
+  point: number;
   /* Duration is only track while ball is actually in motion. */
   duration: number;
   /* Which side scored a goal? */
@@ -53,7 +53,7 @@ export class PointLedger {
 
   logPoint(scoredBy: 'left' | 'right', gameOver: boolean): void {
     this.records.push(PointRecord.create({
-      id: this.records.length + 1,
+      point: this.records.length + 1,
       duration: this.state.pointDuration,
       scoredBy,
       gameOver,
