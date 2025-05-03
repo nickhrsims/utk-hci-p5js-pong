@@ -47,8 +47,8 @@ export class PointLedger {
     text(str(roundDurationSeconds), x, y);
   }
 
-  aggregate(): PointRecord[] {
-    return [...this.records];
+  aggregate(): PointRecordProps[] {
+    return this.records.map((record) => record.props);
   }
 
   logPoint(scoredBy: 'left' | 'right', gameOver: boolean): void {

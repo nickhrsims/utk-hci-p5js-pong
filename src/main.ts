@@ -106,7 +106,7 @@ const setThemeWhite = (): void => {
 let backgroundLumosity = 0;
 
 function saveMetrics(filename: string): void {
-  saveJSON(gameLedger.map((game: Game) => game.aggregateMetrics()).slice(1), filename);
+  saveJSON(gameLedger.map((game: Game) => game.aggregateMetrics()), filename);
 }
 
 function setup() {
