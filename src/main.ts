@@ -42,10 +42,15 @@ const gameConfig: GameConfig = {
   },
 };
 
-let game: Game = Game.create(gameConfig);
+let currentGameIndex = 0;
+
+const gameLedger: Game[] = [Game.create(gameConfig)];
+
+const getCurrentGame = (): Game => gameLedger[currentGameIndex];
 
 const newGame = (): void => {
-  game = Game.create(gameConfig);
+  currentGameIndex += 1;
+  gameLedger[currentGameIndex] = Game.create(gameConfig);
 }
 
 const setBallSizeTiny = (): void => {
@@ -100,13 +105,18 @@ const setThemeWhite = (): void => {
 
 let backgroundLumosity = 0;
 
+function saveMetrics(filename: string): void {
+  saveJSON(gameLedger.map((game: Game) => game.aggregateMetrics()).slice(1), filename);
+}
+
 function setup() {
+  const game = getCurrentGame();
   createCanvas(gameConfig.field.width, gameConfig.field.height);
   textAlign(CENTER, CENTER);
   textSize(game.config.score.textSize);
   setThemeAmber();
   createButton("NEW GAME").mouseClicked(newGame);
-  createButton("Save Metrics").mouseClicked(() => game.exportMetrics());
+  createButton("Save Metrics").mouseClicked(() => saveMetrics('metrics.json'));
   createP();
   createButton("Ball Size (Tiny)").mouseClicked(setBallSizeTiny);
   createButton("Ball Size (Normal)").mouseClicked(setBallSizeNormal);
@@ -124,10 +134,9 @@ function setup() {
 
 function draw() {
   background(backgroundLumosity);
-  game.process(deltaTime);
-  game.drawDebug();
+  getCurrentGame().process(deltaTime);
+  getCurrentGame().drawDebug();
 }
 
 (window as any).setup = setup;
 (window as any).draw = draw;
-newGame();

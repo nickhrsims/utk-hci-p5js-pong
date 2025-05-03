@@ -3,6 +3,7 @@ import { AxisAlignedBoundingBox } from "./axis-aligned-bounding-box";
 import { Ball } from "./ball";
 import { Paddle } from "./paddle";
 import { Vector2 } from "./vector2";
+import { PointLedger } from './point-ledger';
 
 type ColliderTuple = [Paddle, number]
 type ColliderGroup = ColliderTuple[];
@@ -65,55 +66,6 @@ export interface GameParams {
   rightScore: number;
 }
 
-interface RoundData {
-  /* Duration is only track while ball is actually in motion. */
-  duration: number;
-};
-
-class MetricsContainer {
-  /* Where to draw debug output? */
-  textPosition: Vector2;
-
-  /* Round data. */
-  rounds: RoundData[];
-
-  constructor(textPosition: Vector2) {
-    this.textPosition = textPosition;
-    this.rounds = [];
-    this.nextRound();
-  }
-
-  get currentRound() {
-    return this.rounds[this.rounds.length - 1];
-  }
-
-  /**
-   * HACK: Violates responsibility segregation, is JSON and File aware.
-   * NOTE: Does not export final round by-design
-   *       (because its either a game over or current round)
-   */
-  exportToJson(filename: string): void {
-    saveJSON({ rounds: this.rounds.slice(0, this.rounds.length - 1) }, filename);
-  }
-
-  draw(): void {
-    const roundDurationSeconds = Math.floor(this.currentRound.duration / 1000);
-    text(str(roundDurationSeconds), this.textPosition[0], this.textPosition[1]);
-  }
-
-  nextRound(): void {
-    this.rounds.push({ duration: 0 })
-  }
-
-  logBallMotion(delta: number): void {
-    this.currentRound.duration += delta;
-  }
-
-  logGoal(): void {
-    this.nextRound();
-  }
-}
-
 export class Game {
 
   readonly config: GameConfig;
@@ -123,7 +75,7 @@ export class Game {
   protected ball: Ball;
   protected leftScore: number;
   protected rightScore: number;
-  protected metrics: MetricsContainer;
+  protected ledger: PointLedger;
 
   protected constructor(params: GameParams) {
     this.config = params.config
@@ -133,12 +85,7 @@ export class Game {
     this.ball = params.ball;
     this.leftScore = params.leftScore;
     this.rightScore = params.rightScore;
-    this.metrics = new MetricsContainer(
-      [
-        this.field.bottom - (this.config.score.textSize * 2),
-        this.field.right - this.config.score.textSize
-      ]
-    );
+    this.ledger = PointLedger.create();
   }
 
   static create(config: GameConfig): Game {
@@ -194,7 +141,7 @@ export class Game {
         h: config.ball.radius * 2,
       },
       speed: config.ball.initialSpeed,
-      logMotion: (delta: number): void => { game.metrics.logBallMotion(delta) },
+      logMotion: (delta: number): void => { game.ledger.logBallMotion(delta) },
     });
 
     const params: GameParams = {
@@ -221,8 +168,8 @@ export class Game {
     this.draw();
   }
 
-  exportMetrics(): void {
-    this.metrics.exportToJson('metrics.json');
+  aggregateMetrics() {
+    return this.ledger.aggregate();
   }
 
   resetPaddles(): void {
@@ -344,19 +291,23 @@ export class Game {
 
     else if (ball.box.left < field.left) {
       this.rightScore += 1;
-      this.metrics.logGoal();
       this.resetBall();
       if (this.rightScore >= this.config.score.limit) {
         this.process = this.gameover;
+        this.ledger.logPoint('right', true);
+      } else {
+        this.ledger.logPoint('right', false);
       }
     }
 
     else if (ball.box.right > field.right) {
       this.leftScore += 1;
-      this.metrics.logGoal();
       this.resetBall();
       if (this.leftScore >= this.config.score.limit) {
         this.process = this.gameover;
+        this.ledger.logPoint('left', true);
+      } else {
+        this.ledger.logPoint('left', false);
       }
     }
 
@@ -381,7 +332,9 @@ export class Game {
   }
 
   public drawDebug() {
-    this.metrics.draw();
+    const horizontalMargin = this.config.score.textSize * 4;
+    const verticalMargin = this.config.score.textSize * 2;
+    this.ledger.draw(this.field.right - horizontalMargin, this.field.bottom - verticalMargin);
   }
 
   protected bounceBallOff(paddle: Paddle, direction: Direction) {
