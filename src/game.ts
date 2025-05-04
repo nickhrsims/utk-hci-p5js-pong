@@ -207,6 +207,8 @@ export class Game {
   }
 
   aggregatePointRecords() {
+    this.ledger.saveConfig(this.config);
+    
     return this.ledger.aggregate();
   }
 
