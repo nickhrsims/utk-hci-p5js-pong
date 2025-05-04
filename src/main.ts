@@ -1,9 +1,9 @@
 import { Game, GameConfig } from "./game";
 
-const gameConfig: GameConfig = {
+const pongMode: GameConfig = {
   score: {
     textSize: 12,
-    limit: 7,
+    limit: 3,
   },
   paddles: {
     width: 4,
@@ -11,14 +11,14 @@ const gameConfig: GameConfig = {
     speed: 0.25,
     controllers: [
       {
-        height: 99,
-        colliderCount: 2,
+        height: 100,
+        colliderCount: 1,
       }
     ]
   },
   goal: {
     width: 8,
-    heightRatio: 4,
+    heightRatio: 1,
   },
   ball: {
     radius: 6,
@@ -41,10 +41,54 @@ const gameConfig: GameConfig = {
       down: 77, // M
     }
   },
-  bonus: {
-    fuseball: false,
+  debug: {
+    goals: false,
+    pointTime: true,
   },
 };
+
+const twoPaddleMode: GameConfig = {
+  ...pongMode,
+  paddles: {
+    ...pongMode.paddles,
+    controllers: [
+      {
+        height: 100,
+        colliderCount: 2,
+      }
+    ]
+  },
+}
+
+const foosballMode: GameConfig = {
+  ...pongMode,
+  paddles: {
+    ...pongMode.paddles,
+    controllers: [
+      {
+        height: 240,
+        colliderCount: 3,
+      },
+      {
+        height: 120,
+        colliderCount: 2
+      }
+    ]
+  },
+  goal: {
+    width: 8,
+    heightRatio: 4,
+  },
+  debug: {
+    goals: true,
+    pointTime: pongMode.debug.pointTime,
+  }
+}
+
+const gameModeSelection: 0 | 1 | 2 = 0;
+
+const gameModes = [pongMode, twoPaddleMode, foosballMode];
+const gameConfig = gameModes[gameModeSelection];
 
 let currentGameIndex = 0;
 

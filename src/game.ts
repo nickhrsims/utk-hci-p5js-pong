@@ -51,8 +51,9 @@ export interface GameConfig {
       down: number,
     }
   },
-  bonus: {
-    fuseball: boolean,
+  debug: {
+    goals: boolean,
+    pointTime: boolean,
   },
 };
 
@@ -376,15 +377,19 @@ export class Game {
         collider.draw();
       });
     });
-    this.leftGoal.draw();
-    this.rightGoal.draw();
     this.ball.draw();
   }
 
   public drawDebug() {
-    const horizontalMargin = this.config.score.textSize * 4;
-    const verticalMargin = this.config.score.textSize * 2;
-    this.ledger.draw(this.field.right - horizontalMargin, this.field.bottom - verticalMargin);
+    if (this.config.debug.goals) {
+      this.leftGoal.draw();
+      this.rightGoal.draw();
+    }
+    if (this.config.debug.pointTime) {
+      const horizontalMargin = this.config.score.textSize * 4;
+      const verticalMargin = this.config.score.textSize * 2;
+      this.ledger.draw(this.field.right - horizontalMargin, this.field.bottom - verticalMargin);
+    }
   }
 
   protected bounceBallOff(paddle: Paddle, direction: Direction) {
