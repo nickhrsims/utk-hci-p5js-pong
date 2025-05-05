@@ -128,12 +128,12 @@ export class App {
       points: game.aggregatePointRecords(),
       config: {
         ball: {
-          radius: this.gameMode.ball.radius,
-          initialSpeed: this.gameMode.ball.initialSpeed,
+          radius: game.config.ball.radius,
+          initialSpeed: game.config.ball.initialSpeed,
         },
         paddles: {
-          speed: this.gameMode.paddles.speed,
-          perPlayerCount: this.gameMode.paddles.controllers.map((controller) => controller.colliderCount).reduce((a, b) => a + b),
+          speed: game.config.paddles.speed,
+          perPlayerCount: game.config.paddles.controllers.map((controller) => controller.colliderCount).reduce((a, b) => a + b),
         }
       }
     })), filename);
@@ -144,8 +144,9 @@ export class App {
     return this.configs[this.modeString];
   }
 
-  set gameMode(value: 'pong' | 'twoPaddle' | 'foosball') {
+  changeGameMode(value: 'pong' | 'twoPaddle' | 'foosball'): void {
     this.modeString = value;
+    this.newGame();
   }
 
   get game(): Game {
@@ -222,6 +223,12 @@ export class App {
     createButton("New Game").mouseClicked((): void => { this.newGame() });
     createButton("Save Metrics").mouseClicked((): void => { this.saveMetrics('metrics.json') });
     createP();
+    // Game Mode
+    createButton("Pong Mode").mouseClicked((): void => { this.changeGameMode('pong') });
+    createButton("Two-Paddle Mode").mouseClicked((): void => { this.changeGameMode('twoPaddle') });
+    createButton("Foosball Mode").mouseClicked((): void => { this.changeGameMode('foosball') });
+    createP();
+
     // Ball Size Mutations
     createButton("Ball Size (Normal)").mouseClicked((): void => { this.changeBallSizeMutation(BallSizeMutation.normal) });
     createButton("Ball Size (Tiny)").mouseClicked((): void => { this.changeBallSizeMutation(BallSizeMutation.tiny) });
